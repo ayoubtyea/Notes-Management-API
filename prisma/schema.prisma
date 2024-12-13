@@ -1,0 +1,18 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")  // Connection string to PostgreSQL
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Note {
+  id          Int      @id @default(autoincrement())
+  noteContent String
+  tags        String[]
+  sharedWith  String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deleted     Boolean  @default(false)
+}
