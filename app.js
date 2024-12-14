@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 
-// Setting up Nodemailer transporter
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Ensure EMAIL_USER and EMAIL_PASS are set in the environment variables
+
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.error("Error: Missing EMAIL_USER or EMAIL_PASS in .env file");
     process.exit(1);
@@ -28,7 +28,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Home Route: List all notes with pagination
+
 app.get("/", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -59,7 +59,7 @@ app.get("/", async (req, res) => {
     }
 });
 
-// Search Route: Search for notes
+
 app.get("/search", async (req, res) => {
     try {
         const searchTerm = req.query.q || '';
@@ -79,7 +79,7 @@ app.get("/search", async (req, res) => {
     }
 });
 
-// Filter Route: Filter notes by tag or date range
+
 app.get("/filter", async (req, res) => {
     try {
         const { tag, startDate, endDate } = req.query;
@@ -106,7 +106,7 @@ app.get("/filter", async (req, res) => {
     }
 });
 
-// Show Specific Note by ID
+
 app.get("/notes/:id", async (req, res) => {
     try {
         const note = await prisma.note.findUnique({
@@ -124,7 +124,7 @@ app.get("/notes/:id", async (req, res) => {
     }
 });
 
-// Create Note Route
+
 app.post("/", async (req, res) => {
     try {
         const { noteContent, tags = '' } = req.body;
@@ -147,17 +147,13 @@ app.post("/", async (req, res) => {
     }
 });
 
-// Update Note Route
+
 app.post('/update', async (req, res) => {
     try {
-        console.log("Request body:", req.body);  // Log the entire request body
-
         const { noteId, noteContent, tags } = req.body;
-        console.log("Received noteId:", noteId);  // Log the noteId separately
 
-        // Ensure noteId is valid
-        if (!noteId || isNaN(Number(noteId)) || noteId === '') {
-            return res.status(400).send("Invalid noteId"); // Validate if noteId is empty or non-numeric
+        if (!noteId || isNaN(Number(noteId))) {
+            return res.status(400).send("Invalid noteId");
         }
 
         const note = await prisma.note.findUnique({
@@ -166,8 +162,8 @@ app.post('/update', async (req, res) => {
 
         if (note) {
             const updatedNoteContent = noteContent ? noteContent.trim() : note.noteContent;
-            const updatedTags = tags 
-                ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) 
+            const updatedTags = tags
+                ? tags.split(',').map(tag => tag.trim()).filter(tag => tag)
                 : note.tags;
 
             await prisma.note.update({
@@ -178,7 +174,8 @@ app.post('/update', async (req, res) => {
                     updatedAt: new Date(),
                 },
             });
-            res.status(200).send("Note updated successfully");
+
+            res.redirect('/');
         } else {
             res.status(404).send("Note not found");
         }
@@ -190,7 +187,8 @@ app.post('/update', async (req, res) => {
 
 
 
-// Delete Note Route (Soft Delete)
+
+
 app.post('/delete', async (req, res) => {
     try {
         const { noteId } = req.body;
@@ -225,7 +223,7 @@ app.post('/delete', async (req, res) => {
     }
 });
 
-// Share Note Route (by email or userId)
+
 app.post('/share', async (req, res) => {
     const { noteId, email, userId } = req.body;
     try {
